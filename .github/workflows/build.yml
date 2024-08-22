@@ -17,7 +17,7 @@ jobs:
           distribution: 'temurin'
       - name: Build
         run: |
-          ./gradlew assemble --debug
+          ./gradlew assemble
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
@@ -34,6 +34,6 @@ jobs:
           distribution: 'temurin'
       - name: Build
         run: |
-          ./gradlew.bat assemble --debug
+          ./gradlew.bat assemble
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
