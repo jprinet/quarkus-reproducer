@@ -8,4 +8,17 @@ pluginManagement {
         id "${quarkusPluginId}" version "${quarkusPluginVersion}"
     }
 }
+
+plugins {
+    id "com.gradle.develocity" version "3.18"
+}
+
 rootProject.name='windows-failure'
+
+develocity {
+    server = 'https://ge.solutions-team.gradle.com'
+
+    buildScan {
+        uploadInBackground = false
+    }
+}
