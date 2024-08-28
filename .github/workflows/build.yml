@@ -34,7 +34,7 @@ jobs:
           distribution: 'temurin'
       - name: Build
         run: |
-          ./gradlew.bat assemble -D org.gradle.debug=true -D org.gradle.debug.suspend=false --no-daemon --debug --stacktrace
+          ./gradlew.bat assemble -D org.gradle.debug=true -D org.gradle.debug.suspend=false --no-daemon --stacktrace
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
@@ -51,6 +51,6 @@ jobs:
           distribution: 'temurin'
       - name: Build
         run: |
-          ./gradlew.bat assemble --no-daemon --debug --stacktrace
+          ./gradlew.bat assemble --no-daemon --stacktrace
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
