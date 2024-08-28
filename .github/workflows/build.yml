@@ -37,3 +37,20 @@ jobs:
           ./gradlew.bat assemble -D org.gradle.debug=true -D org.gradle.debug.suspend=false --no-daemon
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+
+  build-windows-no-debug:
+    name: Build on Windows without debug
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build
+        run: |
+          ./gradlew.bat assemble --no-daemon
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
