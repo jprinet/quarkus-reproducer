@@ -21,6 +21,23 @@ jobs:
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
+  build-linux-no-debug:
+    name: Build on Linux without debug
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build
+        run: |
+          ./gradlew assemble --no-daemon
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
