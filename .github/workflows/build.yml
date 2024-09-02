@@ -5,8 +5,27 @@ on:
 
 jobs:
   build-linux:
-    name: Build on Linux
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        type: [debug, no-debug]
+        quarkusProperty: [ well-formed-property, mal-formed-property ]
+        include:
+          - os: windows-latest
+            type: debug
+            gradleCmd: './gradlew.bat assemble --no-daemon --stacktrace --info -D org.gradle.debug=true -D org.gradle.debug.suspend=false'
+          - os: windows-latest
+            type: no-debug
+            gradleCmd: './gradlew.bat assemble --no-daemon --stacktrace --info'
+          - os: ubuntu-latest
+            type: debug
+            gradleCmd: './gradlew assemble --no-daemon --stacktrace --info -Dorg.gradle.debug=true -Dorg.gradle.debug.suspend=false'
+          - os: ubuntu-latest
+            type: no-debug
+            gradleCmd: './gradlew assemble --no-daemon --stacktrace --info'
+    name: Build ${{ matrix.type }} on ${{ matrix.os }} with ${{ matrix.quarkusProperty }}
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -15,59 +34,73 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Tamper application.properties with ${{ matrix.quarkusProps }}
+        run: |
+          echo 'quarkus.log.level = "INFO"' > src/main/resources/application.properties
+        if: ${{ matrix.quarkusProperty == 'well-formed-property' }}
+      - name: Tamper application.properties with ${{ matrix.quarkusProps }}
+        run: |
+          echo 'quarkus.log.level = INFO"' > src/main/resources/application.properties
+        if: ${{ matrix.quarkusProperty == 'mal-formed-property' }}
       - name: Build
         run: |
-          ./gradlew assemble -Dorg.gradle.debug=true -Dorg.gradle.debug.suspend=false --no-daemon
+          ${{ matrix.gradleCmd }}
         env:
           DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+      - name: Upload Gradle user home
+        uses: actions/upload-artifact@v2
+        with:
+          name: guh-${{ matrix.os }}-${{ matrix.type }}-${{ matrix.quarkusProperty }}
+          path: ~/.gradle/
+        if: always()
 
-  build-linux-no-debug:
-    name: Build on Linux without debug
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Build
-        run: |
-          ./gradlew assemble --no-daemon
-        env:
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-
-  build-windows:
-    name: Build on Windows
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Build
-        run: |
-          ./gradlew.bat assemble -D org.gradle.debug=true -D org.gradle.debug.suspend=false --no-daemon --stacktrace
-        env:
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
-
-  build-windows-no-debug:
-    name: Build on Windows without debug
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Build
-        run: |
-          ./gradlew.bat assemble --no-daemon --stacktrace
-        env:
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+#  build-linux-no-debug:
+#    name: Build on Linux without debug
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#      - name: Build
+#        run: |
+#          ./gradlew assemble --no-daemon
+#        env:
+#          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+#
+#  build-windows:
+#    name: Build on Windows
+#    runs-on: windows-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#      - name: Build
+#        run: |
+#          ./gradlew.bat assemble -D org.gradle.debug=true -D org.gradle.debug.suspend=false --no-daemon --stacktrace
+#        env:
+#          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+#
+#  build-windows-no-debug:
+#    name: Build on Windows without debug
+#    runs-on: windows-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#      - name: Build
+#        run: |
+#          ./gradlew.bat assemble --no-daemon --stacktrace
+#        env:
+#          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
