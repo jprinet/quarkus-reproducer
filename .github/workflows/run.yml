@@ -1,0 +1,37 @@
+name: Run
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: windows-latest
+            gradleBuildCmd: './gradlew.bat build'
+            javaRunCmd: 'java -Dquarkus.log.level=INFO" -cp windows-failure-1.0.0-SNAPSHOT.jar io.quarkus.reproducer.TestMain'
+          - os: ubuntu-latest
+            gradleBuildCmd: './gradlew build'
+            javaRunCmd: 'java -Dquarkus.log.level=INFO" -cp windows-failure-1.0.0-SNAPSHOT.jar io.quarkus.reproducer.TestMain'
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build
+        run: |
+          ${{ matrix.gradleBuildCmd }}
+        env:
+          DEVELOCITY_ACCESS_KEY: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
+      - name: Run
+        working-directory: build/libs
+        run: |
+          ${{ matrix.javaRunCmd }}
